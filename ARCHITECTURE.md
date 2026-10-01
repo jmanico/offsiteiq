@@ -53,7 +53,7 @@ flowchart LR
     search --> fx[[Exchange-rate source]]
     api --> db[(PostgreSQL)]
     search -. read/write cache .-> cache[(Redis)]
-    roster[[Roster source<br/>HRIS / CSV - OPEN]] --> api
+    roster[[Roster source<br/>Entra + operator CSV]] --> api
 ```
 
 ## 3. Container view
@@ -139,7 +139,7 @@ web/
 | Concern | Choice |
 |---|---|
 | Framework | Django 6.1, Django REST Framework |
-| Auth | OIDC client via `mozilla-django-oidc` or `authlib` (`SEC-AUTH-01`, `SEC-AUTH-02`); sessions in Redis |
+| Auth | Microsoft Entra ID (Q15); OIDC client via `mozilla-django-oidc` or `authlib` (`SEC-AUTH-01`, `SEC-AUTH-02`); sessions in Redis |
 | Authorization | DRF permission classes and scoped querysets; rules in [SECURITY.md](SECURITY.md) §4.4 |
 | Schema / client | `drf-spectacular` emits OpenAPI 3.1; the React client is generated from it |
 | Background jobs | Celery with Redis broker for search orchestration, roster import, retention purge |
@@ -152,7 +152,7 @@ Django apps (bounded modules):
 ```
 api/
   accounts/     Employee, IdP login, roles
-  locations/    Location, geocoding adapter
+  locations/    Location, bundled US airport list (no external geocoder, Q16)
   trips/        Trip, TripParticipant, budgets, override justification
   search/       SearchJob, offers, selection; client for FastAPI
   venues/       Venue
@@ -237,7 +237,7 @@ A failed Provider produces a `partial` job with the failure recorded, not a fail
 - **Time** is `timestamptz` (UTC) plus an IANA `tz` column where the source zone matters (`FR-ITIN-04`).
 - **Keys:** UUIDv4 surrogate primary keys on entity tables (`SEC-AUTHZ-05`); natural keys (ISO codes) on lookup tables.
 - **Many-to-many** relationships use junction tables. Itinerary item attendance is `itinerary_item_participant`.
-- **Polymorphic reference** (`ItineraryItem.ref`) is replaced by nullable FKs with a `CHECK` that exactly one is set, so referential integrity is enforced by the database.
+- **Polymorphic reference** (`ItineraryItem.ref`) is replaced by nullable FKs with a `CHECK` that at most one is set (items such as the workshop link to nothing), so referential integrity is enforced by the database.
 - **Provider detail JSON** (`details jsonb`) is the one deliberate exception to strict 1NF: it holds schema-validated, display-only Provider fields that are never queried or joined. Anything we filter or compute on is promoted to a column.
 - Access is through the Django ORM (`SEC-INPUT-03`; raw SQL rules in [SECURITY.md](SECURITY.md) §4.6).
 
@@ -256,6 +256,7 @@ erDiagram
     EMPLOYEE ||--o{ TRIP_PARTICIPANT : "takes part as"
     ROLE ||--o{ TRIP_PARTICIPANT : grants
     TRIP ||--o| BUDGET_OVERRIDE : "may have"
+    TRIP ||--o| TRIP_LODGING : "pre-booked hotel"
     TRIP ||--o{ SEARCH_JOB : runs
     SEARCH_JOB ||--o{ FLIGHT_OFFER : yields
     SEARCH_JOB ||--o{ LODGING_OFFER : yields
@@ -307,7 +308,7 @@ erDiagram
     }
     TRIP {
         uuid id PK
-        uuid organizer_id FK
+        uuid created_by FK
         uuid destination_id FK
         date start_date
         date end_date
@@ -317,6 +318,15 @@ erDiagram
         text status
         timestamptz created_at
         timestamptz updated_at
+    }
+    TRIP_LODGING {
+        uuid trip_id PK,FK
+        text name
+        text address
+        date check_in
+        date check_out
+        numeric nightly_rate_amount
+        char3 nightly_rate_currency FK
     }
     BUDGET_OVERRIDE {
         uuid trip_id PK,FK
@@ -404,6 +414,10 @@ erDiagram
         uuid flight_offer_id FK
         uuid lodging_offer_id FK
         uuid venue_id FK
+        uuid lodging_id FK
+        text title
+        text location_text
+        text notes
         int version
     }
     ITINERARY_ITEM_PARTICIPANT {
@@ -429,11 +443,13 @@ erDiagram
 | `trip_participant` | `UNIQUE (trip_id, employee_id)` | `FR-PART-02` |
 | `exchange_rate` | `UNIQUE (from_currency, to_currency, rate_date, source)` | `FR-SRCH-04` |
 | `flight_offer`, `lodging_offer` | `UNIQUE (provider_code, provider_ref, search_job_id)`; `fetched_at NOT NULL` | `FR-SRCH-03/08` |
-| `itinerary_item` | `CHECK (num_nonnulls(flight_offer_id, lodging_offer_id, venue_id) <= 1)`; `CHECK (ends_at > starts_at)` | `FR-ITIN-01` |
+| `itinerary_item` | `CHECK (num_nonnulls(flight_offer_id, lodging_offer_id, venue_id, lodging_id) <= 1)`; `CHECK (ends_at > starts_at)` | `FR-ITIN-01` |
 | `itinerary_item_version` | Insert-only for `app_rw` ([SECURITY.md](SECURITY.md) §4.6) | `FR-ITIN-06` |
 
 Notes:
 
+- Organizer authority comes only from `trip_participant.role_code = 'organizer'`; a Trip may have several. `trip.created_by` is informational (FR-TRIP-08). `BUDGET_OVERRIDE.approved_by` is the overriding Organizer.
+- `trip_lodging` is the pre-booked hotel (FR-LODG-01, DEC-07); `lodging_offer` stays for deferred hotel search.
 - `itinerary_item_participant` with no rows for an item means "all participants".
 - Enumerated values: `trip.status` ∈ {draft, ready_for_review, finalized, archived} (labels in DESIGN.md §22); `venue.type` ∈ {meeting, entertainment}; `itinerary_item.type` ∈ {flight, lodging, meeting, event}.
 - `budget_currency` is shared by both Trip budgets. If budgets in different currencies are needed later, split into two FK columns.
@@ -451,7 +467,7 @@ Notes:
 ### 6.1 Account and access
 
 - A dedicated **Dev** account in the company AWS Organization, separate from future Staging and Prod accounts. Access, guardrails, and data rules: [SECURITY.md](SECURITY.md) §6.
-- Region: `OPEN` (default `us-east-1`; depends on `SEC-DATA-05` residency answer).
+- Region: `us-east-1` (SEC-DATA-05 answered: US only).
 - Budget alarms on the account.
 
 ### 6.2 Network
@@ -497,7 +513,7 @@ Security groups: [SECURITY.md](SECURITY.md) §6.
 | Encryption | KMS customer-managed keys |
 | Certificates / DNS | ACM, Route 53 |
 | Logs / metrics / alarms | CloudWatch; X-Ray or OpenTelemetry traces |
-| Infrastructure as code | Terraform (or AWS CDK, `OPEN`), state in S3 with locking |
+| Infrastructure as code | Terraform, state in S3 with locking |
 
 Dev cost controls: Fargate Spot for workers, single NAT Gateway, scale-to-zero schedule outside working hours.
 
@@ -546,7 +562,7 @@ offsiteiq/
 ## 9. Open architectural questions
 
 1. Should search run synchronously for small Trips, or always through the job queue? (Default: always queued.)
-2. Terraform or AWS CDK for infrastructure?
+2. ~~Terraform or AWS CDK?~~ Terraform (decided 2026-10-01).
 3. AWS region and data residency (blocked on `SEC-DATA-05`).
 4. Exchange-rate source and refresh cadence (`FR-SRCH-04`).
 5. Provider staleness window, which sets the Redis cache TTL (`FR-SRCH-08`).

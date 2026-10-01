@@ -60,10 +60,13 @@ These decisions narrow v1. Where they conflict with a requirement in section 4, 
 | ID | Requirement | Verification |
 |----|-------------|--------------|
 | FR-TRIP-01 | The system SHALL accept a destination as a structured location (city, region, country, and resolved geocoordinates), not free text alone. | Unit test: free text is resolved to a canonical location or rejected with an error. |
-| FR-TRIP-02 | The system SHALL accept a date range with an explicit start date and end date, where end date >= start date and start date >= today. | Unit test on boundary conditions. |
+| FR-TRIP-02 | The system SHALL accept a date range with an explicit start date and end date, where end date >= start date and start date >= today in Nashville (America/Chicago) time (Q22). | Unit test on boundary conditions. |
 | FR-TRIP-03 | The system SHALL accept a Trip Budget as a decimal amount with an ISO 4217 currency code. In v1 the code SHALL be `USD` (DEC-03). | Unit test: an amount without a currency is rejected, and a non-USD currency is rejected. |
 | FR-TRIP-04 | The system SHALL accept a Per-Person Budget as a decimal amount with an ISO 4217 currency code. | Unit test. |
-| FR-TRIP-05 | The system SHALL reject a Trip where (Per-Person Budget x Participant count) exceeds the Trip Budget, unless the Organizer explicitly overrides with a recorded justification. | Unit test. `OPEN`: confirm override is allowed. |
+| FR-TRIP-05 | The system SHALL reject a Trip where (Per-Person Budget x Participant count) exceeds the Trip Budget, unless an Organizer of the Trip explicitly overrides with a recorded justification. No second approver is needed (Q6). | Unit test. |
+| FR-TRIP-07 | A Trip SHALL start on a Tuesday and end on the Thursday of the same week (DEC-04, decided 2026-10-01). | Unit test. |
+| FR-TRIP-08 | Only members of the Entra planner group SHALL create Trips; the creator becomes an Organizer. A Trip MAY have several Organizers, who may or may not travel (Q24). | Integration test. |
+| FR-TRIP-09 | An Organizer SHALL move a Trip draft -> ready_for_review -> finalized, and MAY return ready_for_review to draft. The system SHALL archive a Trip automatically after its end date (Q23). | Unit test. |
 | FR-TRIP-06 | All monetary values SHALL be stored and computed as fixed-point decimals, never binary floating point. | Code review and unit test. |
 
 ### 4.2 Participants
@@ -71,9 +74,9 @@ These decisions narrow v1. Where they conflict with a requirement in section 4, 
 | ID | Requirement | Verification |
 |----|-------------|--------------|
 | FR-PART-01 | The system SHALL maintain a roster of employees with, at minimum, a unique employee identifier, display name, and home location (structured, geocoded). | Schema test. |
-| FR-PART-02 | The Organizer SHALL be able to select which employees participate in a Trip. The default selection is `OPEN` (interview said "all workers"; confirm whether all are included by default). | Integration test. |
+| FR-PART-02 | The Organizer SHALL be able to select which employees participate in a Trip. By default every active employee is included, and the Organizer removes people (Q4). | Integration test. |
 | FR-PART-03 | Each Participant's home location SHALL be used as the origin for travel search. | Integration test: search requests carry the correct origin per Participant. |
-| FR-PART-04 | The roster SHALL be importable from an authoritative source. `OPEN`: HRIS, CSV, or manual entry. | Integration test once source is chosen. |
+| FR-PART-04 | Employee identity (name, email, subject) SHALL come from Microsoft Entra ID at sign-in, and home locations SHALL be imported by an operator from a CSV that maps each employee to a US airport code (Q5). | Integration test. |
 | FR-PART-05 | Home location SHALL be stored at the minimum precision needed for travel search (nearest airport or city), not a street address, unless a documented business need exists. | Schema review. |
 
 ### 4.3 Travel and lodging search
@@ -87,19 +90,20 @@ These decisions narrow v1. Where they conflict with a requirement in section 4, 
 | FR-SRCH-05 | The system SHALL flag any option whose cost would cause the Participant to exceed the Per-Person Budget. | Unit test. |
 | FR-SRCH-06 | The system SHALL compute the running Trip total (all Participants' selected flights plus lodging) and flag when it exceeds the Trip Budget. | Unit test. |
 | FR-SRCH-07 | Provider integrations SHALL be implemented behind a common internal interface so Providers can be added or removed without changing search logic. | Architecture review; at least two Providers per category behind one interface. |
-| FR-SRCH-08 | Provider results SHALL be cached with a recorded fetch timestamp and SHALL display that timestamp to the user. | Unit test. `OPEN`: acceptable staleness window. |
-| FR-SRCH-09 | Provider list for v1 is `OPEN`. The interview said "many airlines and hotels"; confirm whether this means direct airline APIs or an aggregator (GDS or similar). | N/A |
-| FR-SRCH-10 | The system SHALL label red-eye flights. It SHALL NOT hide them, and SHALL NOT rank a red-eye above a non-red-eye option only because the red-eye is cheaper. The definition of a red-eye is `OPEN` (Q25). | Unit test: a cheaper red-eye does not outrank an otherwise comparable daytime option. |
-| FR-SRCH-11 | The default search window SHALL come from the agenda: outbound flights arriving at BNA on the Trip's Tuesday, and return flights departing BNA on the Trip's Thursday after the morning activities. A user can widen the window. When the activities end is `OPEN` (Q26). | Unit test: the default query matches the agenda. |
+| FR-SRCH-08 | Provider results SHALL be cached with a recorded fetch timestamp and SHALL display that timestamp to the user. A result older than 1 hour SHALL be marked stale and refreshed before it can be selected (Q12). | Unit test. |
+| FR-SRCH-09 | The v1 real flight Provider SHALL be the Duffel aggregator, used for search only (Q2). A second real Provider is not chosen; FR-SRCH-07's two-per-category check is met by mock Providers until one is. | Contract test with mocks. |
+| FR-SRCH-10 | The system SHALL label red-eye flights. It SHALL NOT hide them, and SHALL NOT rank a red-eye above a non-red-eye option only because the red-eye is cheaper. A red-eye is a flight that departs after 21:00 and arrives before 06:00, each in its airport's local time (Q25). | Unit test: a cheaper red-eye does not outrank an otherwise comparable daytime option. |
+| FR-SRCH-11 | The default search window SHALL come from the agenda: outbound flights arriving at BNA on the Trip's Tuesday, and return flights departing BNA on the Trip's Thursday after the morning activities. A user can widen the window. Thursday activities end at 12:00 Central Time and the earliest default return departure is 14:00 Central Time (Q26). | Unit test: the default query matches the agenda. |
 | FR-SRCH-12 | Each option SHALL show how well it fits the agenda: arrival and departure times against the agenda, the resulting time on site, and the number of stops. Users SHALL be able to filter to nonstop flights. | Unit test with a fixed option set. |
 | FR-SRCH-13 | The system SHALL reject a Participant origin outside the continental US (DEC-02). | Unit test. |
+| FR-SRCH-14 | Each Participant SHALL select their own flight option, and an Organizer of the Trip SHALL be able to select or change it for them (Q18). | Integration test. |
 
 ### 4.3a Lodging (v1)
 
 | ID | Requirement | Verification |
 |----|-------------|--------------|
 | FR-LODG-01 | The Organizer SHALL record the pre-booked hotel as one lodging item on the Trip: name, address, check-in date, and check-out date (DEC-07). | Unit test. |
-| FR-LODG-02 | Whether the hotel cost counts toward the Trip Budget and Per-Person Budget, and how it is entered, is `OPEN` (Q28). | N/A |
+| FR-LODG-02 | The Organizer SHALL enter the hotel's nightly rate in USD. Each Participant has one room, and rate x nights (2: Tuesday and Wednesday) SHALL count toward that Participant's Per-Person Budget and the Trip total (Q28, Q19). | Unit test. |
 
 ### 4.4 Local venues
 
@@ -108,7 +112,7 @@ These decisions narrow v1. Where they conflict with a requirement in section 4, 
 | FR-VENUE-01 | The system SHALL return candidate meeting spaces at the destination with capacity, address, and indicative cost. | Integration test with mocked Provider. |
 | FR-VENUE-02 | The system SHALL return candidate entertainment venues (restaurants, activities) at the destination. | Integration test with mocked Provider. |
 | FR-VENUE-03 | Venue results SHALL be filterable by capacity >= Participant count. | Unit test. |
-| FR-VENUE-04 | Venue data source for v1 is `OPEN`. | N/A |
+| FR-VENUE-04 | The v1 venue data source SHALL be the Google Places API (Q3). Capacity is often missing from it, so a missing capacity is shown as unknown and the Organizer may enter it. | Contract test with mocks. |
 
 ### 4.5 Itinerary
 
@@ -118,15 +122,16 @@ These decisions narrow v1. Where they conflict with a requirement in section 4, 
 | FR-ITIN-02 | The Itinerary SHALL produce a per-Participant view showing only that Participant's travel plus shared events. | Unit test. |
 | FR-ITIN-03 | The system SHALL detect scheduling conflicts (overlapping events, events scheduled before a Participant's arrival or after departure) and report them. | Unit test. |
 | FR-ITIN-04 | All times SHALL be stored in UTC with the originating IANA time zone recorded, and displayed in the destination's local time zone. | Unit test. |
-| FR-ITIN-05 | The Itinerary SHALL be exportable. Format is `OPEN` (ICS, PDF, or both). | Integration test once format is chosen. |
+| FR-ITIN-05 | The Itinerary SHALL be exportable. The format SHALL be ICS (Q7). | Integration test. |
 | FR-ITIN-06 | Changes to the Itinerary SHALL be versioned, recording who changed what and when. | Integration test. |
-| FR-ITIN-07 | A new Trip SHALL start from the 3-day agenda template (DEC-04): Tuesday arrival, an all-day workshop on Wednesday, Thursday morning activities, then departure. The Organizer can edit the template's items. Default session times are `OPEN` (Q27). | Unit test: a new Trip contains the template items in the destination time zone. |
+| FR-ITIN-07 | A new Trip SHALL start from the 3-day agenda template (DEC-04): Tuesday arrival, an all-day workshop on Wednesday, Thursday morning activities, then departure. The Organizer can edit the template's items. Default items, in Central Time: Tuesday welcome dinner 18:00 to 20:00, Wednesday workshop 09:00 to 17:00, Thursday activities 09:00 to 12:00 (Q27). | Unit test: a new Trip contains the template items in the destination time zone. |
+| FR-ITIN-08 | Each Itinerary item SHALL have a title, optional location text, and optional notes, and MAY link to at most one flight, lodging item, or venue. An Organizer SHALL be able to add, edit, and delete items (Q20). | Unit and integration test. |
 
 ## 5. Non-Functional Requirements
 
 | ID | Requirement | Verification |
 |----|-------------|--------------|
-| NFR-PERF-01 | A travel search for a Trip of up to 50 Participants SHALL return results within 30 seconds, with Provider calls executed concurrently. `OPEN`: confirm Participant count ceiling. | Load test. |
+| NFR-PERF-01 | A travel search for a Trip of up to 50 Participants SHALL return results within 30 seconds, with Provider calls executed concurrently. The ceiling is 50 (Q9). | Load test. |
 | NFR-AVAIL-01 | Search SHALL degrade gracefully: if a Provider fails, results from remaining Providers are returned with the failure noted. | Integration test. |
 | NFR-TEST-01 | Automated test coverage SHALL be at least 80% of lines, enforced in CI. | CI gate. |
 | NFR-TEST-02 | All Provider integrations SHALL have mocked contract tests that run without network access. | CI gate. |
@@ -148,6 +153,8 @@ Numbered for tracking. Each must be resolved or explicitly deferred before the i
 10. Any data residency constraints for Participants' locations. (Blocks SEC-DATA-05 in SECURITY.md.)
 11. Session timeout values. (Blocks SEC-AUTH-04 in SECURITY.md.)
 12. Acceptable staleness for cached Provider pricing. (Blocks FR-SRCH-08.)
+
+Round 2, answered 2026-10-01 by the repo owner: Q2 (Duffel aggregator), Q3 (Google Places), Q4 (all included by default), Q5 (Entra plus operator CSV of home airports), Q6 (Organizer overrides with a reason; no second approver), Q7 (ICS), Q8 (90 days, SECURITY.md SEC-DATA-03), Q9 (50), Q11 (60 min idle, 8 h absolute, SECURITY.md SEC-AUTH-04), Q12 (1 hour), Q15 (Microsoft Entra ID; a test tenant is available), Q16 (bundled US airport list; origins are entered as airport codes), Q18 (FR-SRCH-14), Q19 and Q28 (FR-LODG-02; the hotel name and address are entered in the app), Q20 (FR-ITIN-08), Q22 (Nashville time), Q23 (FR-TRIP-09), Q24 (FR-TRIP-08), Q25 (FR-SRCH-10), Q26 (FR-SRCH-11), Q27 (FR-ITIN-07), and the Tuesday-to-Thursday rule (FR-TRIP-07). Still open: Q30.
 
 Questions 13 to 24 came from factory triage on 2026-10-01. They are gaps where a ticket could not be given testable acceptance criteria from the current text.
 
