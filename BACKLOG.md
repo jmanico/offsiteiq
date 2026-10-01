@@ -172,7 +172,7 @@ boundary:
 
 ### OIQ-004 Location model and destination resolution
 
-- **Traces:** FR-TRIP-01, FR-PART-05, SEC-DATA-01, §7 Location
+- **Traces:** FR-TRIP-01, FR-PART-05, SEC-DATA-01, ARCHITECTURE.md §5 Location
 - **Class:** feature · **Depends on:** OIQ-002 · **Blocked by:** Q16
 - **Acceptance criteria**
   - [ ] Free text resolves to a canonical Location with city, region, ISO 3166-1 country, latitude and longitude, and an optional IATA code. Text that cannot be resolved is rejected with an error.
@@ -235,7 +235,7 @@ boundary:
 
 ### OIQ-009 Employee roster model
 
-- **Traces:** FR-PART-01, FR-PART-05, SEC-DATA-01, §7 Employee
+- **Traces:** FR-PART-01, FR-PART-05, SEC-DATA-01, ARCHITECTURE.md §5 Employee
 - **Class:** feature · **Depends on:** OIQ-002, OIQ-004
 - **Acceptance criteria**
   - [ ] Each Employee has a UUID, display name, email, and home Location.

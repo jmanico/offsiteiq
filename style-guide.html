@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>offsiteiq style guide</title>
+<style>
+  /* Tokens: copied verbatim from DESIGN.md §39. DESIGN.md is authoritative. */
+  :root {
+    --oiq-navy: #172A46;
+    --oiq-blue: #3978F6;
+    --oiq-teal: #19A88C;
+    --oiq-orchid: #805AD5;
+
+    --oiq-sky: #DDEBFF;
+    --oiq-mint: #DDF5EE;
+    --oiq-lilac: #ECE6FA;
+    --oiq-sun: #F8C75A;
+    --oiq-coral: #E96A67;
+    --oiq-coral-tint: #FBE1E0;
+    --oiq-sun-tint: #FDF1D3;
+    --oiq-sun-dark: #B7861A;
+
+    --oiq-neutral-0: #FFFFFF;
+    --oiq-neutral-25: #FBFCFE;
+    --oiq-neutral-50: #F5F7FA;
+    --oiq-neutral-100: #E9EDF3;
+    --oiq-neutral-300: #C5CCD8;
+    --oiq-neutral-500: #737E8F;
+    --oiq-neutral-700: #3B4657;
+    --oiq-neutral-900: #172033;
+
+    --oiq-radius-sm: 6px;
+    --oiq-radius-md: 10px;
+    --oiq-radius-btn: 12px;
+    --oiq-radius-lg: 16px;
+    --oiq-radius-xl: 20px;
+    --oiq-radius-2xl: 28px;
+    --oiq-radius-pill: 999px;
+
+    --oiq-shadow-card: 0 1px 2px rgba(23, 32, 51, 0.04), 0 8px 24px rgba(23, 32, 51, 0.06);
+    --oiq-shadow-float: 0 12px 36px rgba(23, 32, 51, 0.12);
+    --oiq-focus: 0 0 0 3px rgba(57, 120, 246, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--oiq-neutral-25);
+    color: var(--oiq-navy);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { left: 16px; top: 16px; background: var(--oiq-neutral-0); padding: 8px 16px; border-radius: var(--oiq-radius-sm); box-shadow: var(--oiq-focus); }
+  header { padding: 48px 24px 24px; max-width: 1120px; margin: 0 auto; }
+  header img { width: 240px; max-width: 100%; }
+  main { max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+  section { margin-top: 64px; }
+  h1 { font-size: 48px; font-weight: 700; line-height: 1.10; margin: 24px 0 8px; }
+  h2 { font-size: 28px; font-weight: 650; line-height: 1.20; margin: 0 0 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 24px 0 12px; }
+  .lede { font-size: 18px; line-height: 1.60; color: var(--oiq-neutral-700); max-width: 64ch; }
+  .ref { font-size: 12px; font-weight: 500; color: var(--oiq-neutral-500); }
+  code { font-size: 13px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .card {
+    background: var(--oiq-neutral-0);
+    border: 1px solid var(--oiq-neutral-100);
+    border-radius: var(--oiq-radius-lg);
+    box-shadow: var(--oiq-shadow-card);
+    padding: 24px;
+  }
+  .swatch { border-radius: var(--oiq-radius-lg); overflow: hidden; border: 1px solid var(--oiq-neutral-100); background: var(--oiq-neutral-0); }
+  .swatch .chip-color { height: 72px; }
+  .swatch .meta { padding: 8px 12px 12px; font-size: 13px; }
+  .swatch .meta b { display: block; font-weight: 600; }
+  .swatch .meta span { color: var(--oiq-neutral-500); font-size: 12px; }
+
+  .type-row { display: flex; gap: 24px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--oiq-neutral-100); flex-wrap: wrap; }
+  .type-row .spec { width: 200px; flex: none; font-size: 12px; color: var(--oiq-neutral-500); }
+
+  .space-row { display: flex; align-items: center; gap: 16px; margin: 8px 0; font-size: 13px; }
+  .space-row .bar { height: 16px; background: var(--oiq-blue); border-radius: 2px; }
+  .space-row .label { width: 48px; color: var(--oiq-neutral-500); }
+
+  .radius-box { height: 72px; background: var(--oiq-sky); border: 1px solid var(--oiq-neutral-300); }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+  .btn {
+    min-height: 44px; padding: 0 20px; border-radius: var(--oiq-radius-btn);
+    font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; transition: box-shadow 150ms, background 150ms;
+  }
+  .btn:focus-visible { outline: none; box-shadow: var(--oiq-focus); }
+  .btn-primary { background: var(--oiq-blue); color: var(--oiq-neutral-0); }
+  .btn-secondary { background: var(--oiq-neutral-0); color: var(--oiq-navy); border-color: var(--oiq-neutral-100); }
+  .btn-tertiary { background: transparent; color: var(--oiq-blue); }
+  .btn-destructive { background: var(--oiq-coral); color: var(--oiq-neutral-900); }
+
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+  .field label { font-size: 13px; font-weight: 600; line-height: 1.30; }
+  .input {
+    height: 44px; padding: 0 12px; border-radius: var(--oiq-radius-md);
+    border: 1px solid var(--oiq-neutral-300); background: var(--oiq-neutral-0);
+    font: inherit; color: var(--oiq-navy);
+  }
+  .input:focus { outline: 3px solid rgba(57, 120, 246, 0.22); border-color: var(--oiq-blue); }
+  .input[aria-invalid="true"] { border-color: var(--oiq-coral); }
+  .input:disabled { background: var(--oiq-neutral-50); color: var(--oiq-neutral-500); }
+  .error-text { font-size: 13px; color: var(--oiq-neutral-900); }
+  .money { display: flex; }
+  .money .input:first-child { border-radius: var(--oiq-radius-md) 0 0 var(--oiq-radius-md); width: 140px; text-align: right; }
+  .money .input:last-child { border-radius: 0 var(--oiq-radius-md) var(--oiq-radius-md) 0; border-left: 0; width: 88px; }
+
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--oiq-radius-pill); font-size: 13px; font-weight: 600; color: var(--oiq-neutral-900); }
+  .status svg { width: 14px; height: 14px; flex: none; }
+  .s-ok { background: var(--oiq-mint); }
+  .s-over { background: var(--oiq-coral-tint); }
+  .s-warn { background: var(--oiq-sun-tint); }
+  .s-info { background: var(--oiq-sky); }
+  .s-neutral { background: var(--oiq-neutral-100); }
+
+  .budget .track { height: 12px; background: var(--oiq-neutral-100); border-radius: var(--oiq-radius-pill); overflow: hidden; margin: 8px 0; }
+  .budget .fill { height: 100%; border-radius: var(--oiq-radius-pill); }
+  .budget .line { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--oiq-neutral-500); padding: 12px; border-bottom: 1px solid var(--oiq-neutral-100); }
+  td { padding: 0 12px; height: 52px; border-bottom: 1px solid var(--oiq-neutral-100); }
+  td.amt { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; }
+
+  .offer .route { font-weight: 650; font-size: 18px; }
+  .offer .price { font-weight: 650; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .offer .src { font-size: 12px; color: var(--oiq-neutral-500); margin-top: 8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 640px) {
+    h1 { font-size: 36px; }
+    .type-row .spec { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <img src="logo.svg" alt="offsiteiq">
+  <h1>Style guide</h1>
+  <p class="lede">A working rendering of the design tokens and core components in <a href="DESIGN.md">DESIGN.md</a>. If this page and DESIGN.md disagree, DESIGN.md wins.</p>
+</header>
+
+<main id="main">
+
+<section aria-labelledby="color">
+  <h2 id="color">Color</h2>
+  <p class="ref">DESIGN.md §5. Teal, sun and coral are not text colors on white: use them for fills, icons and borders only.</p>
+
+  <h3>Brand</h3>
+  <div class="grid">
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-navy)"></div><div class="meta"><b>brand.navy</b><span>#172A46 · --oiq-navy</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-blue)"></div><div class="meta"><b>brand.blue</b><span>#3978F6 · --oiq-blue</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-teal)"></div><div class="meta"><b>brand.teal</b><span>#19A88C · --oiq-teal</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-orchid)"></div><div class="meta"><b>brand.orchid</b><span>#805AD5 · --oiq-orchid</span></div></div>
+  </div>
+
+  <h3>Supporting</h3>
+  <div class="grid">
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sky)"></div><div class="meta"><b>accent.sky</b><span>#DDEBFF · --oiq-sky</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-mint)"></div><div class="meta"><b>accent.mint</b><span>#DDF5EE · --oiq-mint</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-lilac)"></div><div class="meta"><b>accent.lilac</b><span>#ECE6FA · --oiq-lilac</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun)"></div><div class="meta"><b>accent.sun</b><span>#F8C75A · --oiq-sun</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-coral)"></div><div class="meta"><b>accent.coral</b><span>#E96A67 · --oiq-coral</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-coral-tint)"></div><div class="meta"><b>accent.coral-tint</b><span>#FBE1E0 · --oiq-coral-tint</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun-tint)"></div><div class="meta"><b>accent.sun-tint</b><span>#FDF1D3 · --oiq-sun-tint</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun-dark)"></div><div class="meta"><b>accent.sun-dark</b><span>#B7861A · --oiq-sun-dark</span></div></div>
+  </div>
+
+  <h3>Neutrals</h3>
+  <div class="grid">
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-0)"></div><div class="meta"><b>neutral.0</b><span>#FFFFFF</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-25)"></div><div class="meta"><b>neutral.25</b><span>#FBFCFE</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-50)"></div><div class="meta"><b>neutral.50</b><span>#F5F7FA</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-100)"></div><div class="meta"><b>neutral.100</b><span>#E9EDF3</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-300)"></div><div class="meta"><b>neutral.300</b><span>#C5CCD8</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-500)"></div><div class="meta"><b>neutral.500</b><span>#737E8F</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-700)"></div><div class="meta"><b>neutral.700</b><span>#3B4657</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-neutral-900)"></div><div class="meta"><b>neutral.900</b><span>#172033</span></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="type">
+  <h2 id="type">Typography</h2>
+  <p class="ref">DESIGN.md §6. Inter, sentence case, tabular figures for money and times.</p>
+  <div class="card">
+    <div class="type-row"><div class="spec">Display · 64 / 700 / 1.05</div><div style="font-size:64px;font-weight:700;line-height:1.05">Offsite</div></div>
+    <div class="type-row"><div class="spec">H1 · 48 / 700 / 1.10</div><div style="font-size:48px;font-weight:700;line-height:1.10">Plan a trip</div></div>
+    <div class="type-row"><div class="spec">H2 · 36 / 700 / 1.15</div><div style="font-size:36px;font-weight:700;line-height:1.15">Flight options</div></div>
+    <div class="type-row"><div class="spec">H3 · 28 / 650 / 1.20</div><div style="font-size:28px;font-weight:650;line-height:1.20">Hotel options</div></div>
+    <div class="type-row"><div class="spec">H4 · 22 / 650 / 1.25</div><div style="font-size:22px;font-weight:650;line-height:1.25">Master itinerary</div></div>
+    <div class="type-row"><div class="spec">Body large · 18 / 400 / 1.60</div><div style="font-size:18px;line-height:1.60">Bring everyone's home city into one plan.</div></div>
+    <div class="type-row"><div class="spec">Body · 16 / 400 / 1.55</div><div style="font-size:16px;line-height:1.55">Hotel rates were retrieved 18 minutes ago.</div></div>
+    <div class="type-row"><div class="spec">Body small · 14 / 400 / 1.45</div><div style="font-size:14px;line-height:1.45">3 participants exceed the $600.00 per-person budget.</div></div>
+    <div class="type-row"><div class="spec">Label · 13 / 600 / 1.30</div><div style="font-size:13px;font-weight:600;line-height:1.30">Per-person budget</div></div>
+    <div class="type-row"><div class="spec">Caption · 12 / 500 / 1.35</div><div style="font-size:12px;font-weight:500;line-height:1.35">Source: Provider A · as of 14:02</div></div>
+  </div>
+</section>
+
+<section aria-labelledby="spacing">
+  <h2 id="spacing">Spacing</h2>
+  <p class="ref">DESIGN.md §7. 8px base grid.</p>
+  <div class="card">
+    <div class="space-row"><span class="label">4</span><span class="bar" style="width:4px"></span></div>
+    <div class="space-row"><span class="label">8</span><span class="bar" style="width:8px"></span></div>
+    <div class="space-row"><span class="label">12</span><span class="bar" style="width:12px"></span></div>
+    <div class="space-row"><span class="label">16</span><span class="bar" style="width:16px"></span></div>
+    <div class="space-row"><span class="label">24</span><span class="bar" style="width:24px"></span></div>
+    <div class="space-row"><span class="label">32</span><span class="bar" style="width:32px"></span></div>
+    <div class="space-row"><span class="label">48</span><span class="bar" style="width:48px"></span></div>
+    <div class="space-row"><span class="label">64</span><span class="bar" style="width:64px"></span></div>
+    <div class="space-row"><span class="label">96</span><span class="bar" style="width:96px"></span></div>
+    <div class="space-row"><span class="label">128</span><span class="bar" style="width:128px"></span></div>
+  </div>
+</section>
+
+<section aria-labelledby="shape">
+  <h2 id="shape">Radius and elevation</h2>
+  <p class="ref">DESIGN.md §8.</p>
+  <div class="grid">
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-sm)"></div><p class="ref">radius.sm · 6px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-md)"></div><p class="ref">radius.md · 10px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-btn)"></div><p class="ref">radius.btn · 12px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-lg)"></div><p class="ref">radius.lg · 16px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-xl)"></div><p class="ref">radius.xl · 20px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-2xl)"></div><p class="ref">radius.2xl · 28px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-pill)"></div><p class="ref">radius.pill · 999px</p></div>
+  </div>
+  <div class="grid" style="margin-top:24px">
+    <div class="card"><b>Card</b><p class="ref">--oiq-shadow-card</p></div>
+    <div class="card" style="box-shadow:var(--oiq-shadow-float)"><b>Floating panel</b><p class="ref">--oiq-shadow-float</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="buttons">
+  <h2 id="buttons">Buttons</h2>
+  <p class="ref">DESIGN.md §26. Minimum height 44px.</p>
+  <div class="card row">
+    <button class="btn btn-primary" type="button">Plan a trip</button>
+    <button class="btn btn-secondary" type="button">See how it works</button>
+    <button class="btn btn-tertiary" type="button">Cancel</button>
+    <button class="btn btn-destructive" type="button">Remove participant</button>
+  </div>
+</section>
+
+<section aria-labelledby="inputs">
+  <h2 id="inputs">Inputs</h2>
+  <p class="ref">DESIGN.md §27. Labels stay visible; money is always amount plus currency.</p>
+  <div class="card row" style="align-items:flex-start">
+    <div class="field">
+      <label for="dest">Destination</label>
+      <input class="input" id="dest" value="Austin, TX, US">
+    </div>
+    <div class="field">
+      <label for="amt">Trip budget</label>
+      <div class="money">
+        <input class="input num" id="amt" value="65,000.00" inputmode="decimal">
+        <select class="input" aria-label="Trip budget currency"><option>USD</option><option>EUR</option><option>GBP</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="bad">Destination</label>
+      <input class="input" id="bad" value="Springfeild" aria-invalid="true" aria-describedby="bad-err">
+      <span class="error-text" id="bad-err">We couldn't resolve this to a place. Choose a suggestion.</span>
+    </div>
+    <div class="field">
+      <label for="dis">Roster import</label>
+      <input class="input" id="dis" value="Not yet available" disabled>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="chips">
+  <h2 id="chips">Status chips</h2>
+  <p class="ref">DESIGN.md §30. Text plus color, plus an icon for critical status. Never color alone.</p>
+  <div class="card row">
+    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over per-person budget</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over trip budget</span>
+    <span class="status s-info">Nonstop</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3zM12 10v4M12 17h.01"/></svg>Conflict</span>
+    <span class="status s-warn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-sun-dark)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Stale rate</span>
+    <span class="status s-neutral">Draft</span>
+    <span class="status s-info">Finalized</span>
+  </div>
+</section>
+
+<section aria-labelledby="budget">
+  <h2 id="budget">Budget bars</h2>
+  <p class="ref">DESIGN.md §21. Horizontal bars, two decimals, status in words.</p>
+  <div class="card budget">
+    <div class="line"><b>Trip budget</b><span class="num">$43,220.00 / $65,000.00</span></div>
+    <div class="track"><div class="fill" style="width:66%;background:var(--oiq-teal)"></div></div>
+    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
+
+    <div class="line" style="margin-top:24px"><b>Per-person budget · Priya N.</b><span class="num">$712.00 / $600.00</span></div>
+    <div class="track"><div class="fill" style="width:100%;background:var(--oiq-coral)"></div></div>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over by $112.00</span>
+  </div>
+</section>
+
+<section aria-labelledby="offer">
+  <h2 id="offer">Option card</h2>
+  <p class="ref">DESIGN.md §16, §31. Every rate shows price, currency, provider, reference and freshness.</p>
+  <div class="card offer" style="max-width:560px">
+    <div class="row" style="justify-content:space-between">
+      <span class="route">SFO → AUS</span>
+      <span class="price">$418.00 <span class="ref">USD round trip</span></span>
+    </div>
+    <div class="row" style="justify-content:space-between;margin-top:4px">
+      <span>United 1572 · nonstop</span>
+      <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within per-person budget</span>
+    </div>
+    <div class="num">09:10 → 14:42 (3h 32m)</div>
+    <div class="src">Source: Provider A · ref UA1572-XYZ · as of 14:02</div>
+  </div>
+</section>
+
+<section aria-labelledby="table">
+  <h2 id="table">Table</h2>
+  <p class="ref">DESIGN.md §15, §29. Real table markup, 48–56px rows, origin as airport or city only.</p>
+  <div class="card table-wrap">
+    <table>
+      <caption class="ref" style="text-align:left;padding-bottom:8px">Participants and origins</caption>
+      <thead><tr><th scope="col">Participant</th><th scope="col">Origin</th><th scope="col">Cheapest viable flight</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td>Alex R.</td><td>SFO</td><td class="amt">$418.00</td><td><span class="status s-ok">Within budget</span></td></tr>
+        <tr><td>Priya N.</td><td>LHR</td><td class="amt">$712.00</td><td><span class="status s-over">Over by $112.00</span></td></tr>
+        <tr><td>Sam K.</td><td>ORD</td><td class="amt">$289.00</td><td><span class="status s-warn">Stale rate</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

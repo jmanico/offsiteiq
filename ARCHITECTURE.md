@@ -1,9 +1,7 @@
 # ARCHITECTURE.md: offsiteiq System Architecture
 
 Version: 0.1 (draft, 2026-10-01)
-Status: DRAFT. Derived from [REQUIREMENTS.md](REQUIREMENTS.md) and [DESIGN.md](DESIGN.md). Where this document and REQUIREMENTS.md disagree, REQUIREMENTS.md wins. Requirement IDs (for example `SEC-AUTHZ-04`) are cited where an architectural decision exists to satisfy one. Items marked `OPEN` need confirmation before implementation.
-
-Diagrams use [Mermaid](https://mermaid.js.org/) and render natively on GitHub.
+Status: DRAFT. Derived from [REQUIREMENTS.md](REQUIREMENTS.md) and [DESIGN.md](DESIGN.md). Where this document and REQUIREMENTS.md disagree, REQUIREMENTS.md wins; on security, [SECURITY.md](SECURITY.md) wins and owns every security control. Requirement IDs (for example `SEC-AUTHZ-04`) are cited where an architectural decision exists to satisfy one. Items marked `OPEN` need confirmation before implementation.
 
 ## 1. Overview
 
@@ -18,12 +16,23 @@ offsiteiq is split into four runtime parts:
 
 Everything runs in a dedicated **AWS Dev account** for v1 development (section 6).
 
+Runtime versions:
+
+| Component | Version |
+|---|---|
+| Python | 3.12, 3.13, or 3.14; production micro release pinned and tested |
+| Django | 6.1 line, latest patch |
+| Django REST Framework | Latest release compatible with Django 6.1 |
+| PostgreSQL | 16 (RDS) |
+| React / react-dom | 19.x |
+| TypeScript | `strict: true` |
+
 ### Why both Django and FastAPI
 
 The two Python services are split by workload, not by preference:
 
 - **Django** is a good fit for the transactional, permission-heavy core: a mature ORM with migrations, a built-in admin, strong CSRF/session defaults, and DRF's permission classes for object-level authorization (`SEC-AUTHZ-*`).
-- **FastAPI** is a good fit for the I/O-bound search path: native `async`, Pydantic schema validation of untrusted Provider payloads (`SEC-INPUT-01`, `SEC-INTEG-04`), and cheap concurrency for the 50-participant, 30-second target (`NFR-PERF-01`).
+- **FastAPI** is a good fit for the I/O-bound search path: native `async`, Pydantic schema validation of untrusted Provider payloads (`SEC-INPUT-01`, `SEC-INTEG-04`), and cheap concurrency for the search latency target (`NFR-PERF-01`).
 
 Keeping Provider integrations in a separate service also isolates Provider credentials and third-party failure modes from the system of record (`SEC-INTEG-01`, `SEC-INTEG-03`, `NFR-AVAIL-01`).
 
@@ -106,18 +115,12 @@ Serving the SPA and the API from the same CloudFront origin keeps the session co
 | Language / build | TypeScript (strict), Vite |
 | Routing | React Router |
 | Server state | TanStack Query (caching, retries, polling of search jobs) |
-| Forms / validation | React Hook Form + Zod (UX only; the server re-validates everything) |
-| UI | Design tokens and components from [DESIGN.md](DESIGN.md); Inter; WCAG 2.2 AA |
+| Forms / validation | React Hook Form + Zod |
+| UI | Tokens and components from [DESIGN.md](DESIGN.md) |
 | Dates / money | Temporal-style handling via `date-fns-tz`; money as decimal strings, never JS `number` (`FR-TRIP-06`) |
 | Testing | Vitest + React Testing Library; Playwright for end-to-end; axe for accessibility |
 
-Notes:
-
-- No tokens in `localStorage` or JS-readable storage. The SPA relies on the HttpOnly session cookie set by Django (`SEC-AUTH-03`).
-- Django sets a CSRF cookie; the SPA echoes it in an `X-CSRFToken` header on unsafe methods.
-- Provider and venue text is rendered as text only. No `dangerouslySetInnerHTML` (`SEC-INPUT-04`). ESLint rule enforces this.
-- Strict CSP with no `unsafe-inline` scripts, set at CloudFront.
-- Role-based UI hiding (for example, hiding budgets from Participants) is cosmetic; the API omits the data (`SEC-AUTHZ-02`).
+Front-end security rules: [SECURITY.md](SECURITY.md) §5.
 
 Source layout (proposed):
 
@@ -135,14 +138,14 @@ web/
 
 | Concern | Choice |
 |---|---|
-| Framework | Django 5.x LTS, Django REST Framework |
-| Auth | OIDC authorization code + PKCE against the company IdP via `mozilla-django-oidc` or `authlib` (`SEC-AUTH-01`, `SEC-AUTH-02`). Server-side sessions in Redis. |
-| Authorization | DRF permission classes plus queryset scoping by Trip membership and role on every view (`SEC-AUTHZ-04`) |
+| Framework | Django 6.1, Django REST Framework |
+| Auth | OIDC client via `mozilla-django-oidc` or `authlib` (`SEC-AUTH-01`, `SEC-AUTH-02`); sessions in Redis |
+| Authorization | DRF permission classes and scoped querysets; rules in [SECURITY.md](SECURITY.md) §4.4 |
 | Schema / client | `drf-spectacular` emits OpenAPI 3.1; the React client is generated from it |
 | Background jobs | Celery with Redis broker for search orchestration, roster import, retention purge |
-| Audit | Append-only itinerary version rows (`FR-ITIN-06`) |
-| Admin | Django admin, restricted to an operator group, behind IdP auth |
-| Testing | pytest-django, factory_boy, coverage gate at 80% (`NFR-TEST-01`) |
+| Audit | Itinerary version rows (`FR-ITIN-06`) |
+| Admin | Django admin (access rules in [SECURITY.md](SECURITY.md) §4.4) |
+| Testing | pytest-django, factory_boy, coverage gate (`NFR-TEST-01`) |
 
 Django apps (bounded modules):
 
@@ -158,32 +161,17 @@ api/
   audit/        security event logging
 ```
 
-Authorization model:
-
-```mermaid
-flowchart LR
-    req[Request] --> authn{Session valid?}
-    authn -- no --> r401[401]
-    authn -- yes --> member{Member of trip_id?}
-    member -- no --> r404[404, no existence leak]
-    member -- yes --> role{Role permits action?}
-    role -- no --> r403[403]
-    role -- yes --> scope[Queryset scoped to<br/>trip + role] --> ok[200]
-```
-
-Participants receive serializers that exclude budget fields and other Participants' offers (`SEC-AUTHZ-02`, `SEC-AUTHZ-03`). Object IDs are UUIDv4 (`SEC-AUTHZ-05`).
-
 ### 4.3 Search service (FastAPI)
 
 | Concern | Choice |
 |---|---|
-| Framework | FastAPI on Uvicorn, Python 3.12+ |
+| Framework | FastAPI on Uvicorn |
 | HTTP client | `httpx.AsyncClient` with per-Provider timeouts and connection limits |
 | Validation | Pydantic v2 models per Provider response; response size caps before parsing (`SEC-INTEG-04`) |
 | Resilience | Per-Provider retry budget (`tenacity`) and circuit breaker (`SEC-INTEG-03`) |
 | Cache | Redis, keyed by normalized query; stores `fetched_at` (`FR-SRCH-08`) |
-| Auth (inbound) | Accepts only Django/worker calls: private network plus a short-lived signed service token. Not reachable from the internet. |
-| Credentials | One Secrets Manager secret per Provider, least scope (`SEC-INTEG-01`, `SEC-INTEG-02`) |
+| Auth (inbound) | Internal only; enforcement in [SECURITY.md](SECURITY.md) §6 |
+| Credentials | One Secrets Manager secret per Provider (`SEC-INTEG-01`, `SEC-INTEG-02`) |
 | Testing | pytest + `respx` mocked contract tests with no network (`NFR-TEST-02`) |
 
 Provider adapter interface (`FR-SRCH-07`):
@@ -248,10 +236,10 @@ A failed Provider produces a `partial` job with the failure recorded, not a fail
 - **Money** is two columns, `amount numeric(12,2)` and `currency_code char(3) REFERENCES currency` (`FR-TRIP-06`).
 - **Time** is `timestamptz` (UTC) plus an IANA `tz` column where the source zone matters (`FR-ITIN-04`).
 - **Keys:** UUIDv4 surrogate primary keys on entity tables (`SEC-AUTHZ-05`); natural keys (ISO codes) on lookup tables.
-- **Many-to-many** relationships use junction tables. The `participants: [UUID]` list from the REQUIREMENTS §7 sketch becomes `itinerary_item_participant`.
+- **Many-to-many** relationships use junction tables. Itinerary item attendance is `itinerary_item_participant`.
 - **Polymorphic reference** (`ItineraryItem.ref`) is replaced by nullable FKs with a `CHECK` that exactly one is set, so referential integrity is enforced by the database.
 - **Provider detail JSON** (`details jsonb`) is the one deliberate exception to strict 1NF: it holds schema-validated, display-only Provider fields that are never queried or joined. Anything we filter or compute on is promoted to a column.
-- Access is through the Django ORM (parameterized; `SEC-INPUT-03`). Raw SQL is banned by lint rule except in reviewed migrations.
+- Access is through the Django ORM (`SEC-INPUT-03`; raw SQL rules in [SECURITY.md](SECURITY.md) §4.6).
 
 ### 5.2 Entity-relationship diagram
 
@@ -442,31 +430,29 @@ erDiagram
 | `exchange_rate` | `UNIQUE (from_currency, to_currency, rate_date, source)` | `FR-SRCH-04` |
 | `flight_offer`, `lodging_offer` | `UNIQUE (provider_code, provider_ref, search_job_id)`; `fetched_at NOT NULL` | `FR-SRCH-03/08` |
 | `itinerary_item` | `CHECK (num_nonnulls(flight_offer_id, lodging_offer_id, venue_id) <= 1)`; `CHECK (ends_at > starts_at)` | `FR-ITIN-01` |
-| `itinerary_item_version` | Insert-only (DB role has no `UPDATE`/`DELETE`) | `FR-ITIN-06` |
+| `itinerary_item_version` | Insert-only for `app_rw` ([SECURITY.md](SECURITY.md) §4.6) | `FR-ITIN-06` |
 
 Notes:
 
-- `itinerary_item_participant` with no rows for an item means "all participants", matching REQUIREMENTS §7.
+- `itinerary_item_participant` with no rows for an item means "all participants".
+- Enumerated values: `trip.status` ∈ {draft, ready_for_review, finalized, archived} (labels in DESIGN.md §22); `venue.type` ∈ {meeting, entertainment}; `itinerary_item.type` ∈ {flight, lodging, meeting, event}.
 - `budget_currency` is shared by both Trip budgets. If budgets in different currencies are needed later, split into two FK columns.
 - `employee.email` and `display_name` are sourced from the IdP; the IdP subject (`idp_subject`) is the join key, not email.
-- Retention purge (`SEC-DATA-03`) is a scheduled Celery task that deletes Trips past the retention window; FKs cascade from `trip`.
+- Retention purge (`SEC-DATA-03`) is a scheduled Celery task that deletes Trips past the retention window; FKs cascade from `trip`. Audit rules: [SECURITY.md](SECURITY.md) §4.6.
 
 ### 5.4 Operational settings
 
-- Amazon RDS for PostgreSQL 16, encrypted with a customer-managed KMS key (`SEC-DATA-02`), `rds.force_ssl = 1`.
-- Separate DB roles: `app_migrator` (DDL, used only by the migration job), `app_rw` (Django and worker), `app_ro` (reporting). FastAPI has no DB credentials.
-- Dev: single-AZ `db.t4g.medium`, 7-day automated backups, no public access.
+- Amazon RDS for PostgreSQL. Encryption, TLS, and DB roles: [SECURITY.md](SECURITY.md) §4.6, §6.
+- Dev: single-AZ `db.t4g.medium`, 7-day automated backups.
 - Migrations run as a one-off ECS task in the deploy pipeline before new app tasks start.
 
 ## 6. AWS Dev account
 
 ### 6.1 Account and access
 
-- A dedicated **Dev** account in the company AWS Organization, separate from future Staging and Prod accounts. No production or real employee data in Dev; seed data is synthetic.
-- Human access via IAM Identity Center (SSO) with MFA. No IAM users or long-lived access keys.
-- CI deploys via GitHub Actions OIDC federation into a scoped deploy role.
+- A dedicated **Dev** account in the company AWS Organization, separate from future Staging and Prod accounts. Access, guardrails, and data rules: [SECURITY.md](SECURITY.md) §6.
 - Region: `OPEN` (default `us-east-1`; depends on `SEC-DATA-05` residency answer).
-- Baseline guardrails: CloudTrail (org trail), GuardDuty, AWS Config, Security Hub, IAM Access Analyzer, budget alarms.
+- Budget alarms on the account.
 
 ### 6.2 Network
 
@@ -496,16 +482,7 @@ flowchart TB
     ecs --> vpce
 ```
 
-Security groups (allow-list, deny by default):
-
-| Source | Destination | Port |
-|---|---|---|
-| CloudFront managed prefix list | Public ALB | 443 |
-| Public ALB | Django tasks | 8000 |
-| Django + worker tasks | Internal ALB → FastAPI tasks | 443 → 8001 |
-| Django + worker tasks | RDS | 5432 |
-| Django, worker, FastAPI tasks | ElastiCache | 6379 (TLS, AUTH) |
-| FastAPI tasks | NAT → Providers | 443 |
+Security groups: [SECURITY.md](SECURITY.md) §6.
 
 ### 6.3 Services used
 
@@ -526,32 +503,18 @@ Dev cost controls: Fargate Spot for workers, single NAT Gateway, scale-to-zero s
 
 ## 7. Cross-cutting concerns
 
-### 7.1 Security
-
-| Control | Where |
-|---|---|
-| OIDC + PKCE, HttpOnly cookies | Django (`SEC-AUTH-*`) |
-| Object-level authorization | Django permission classes and scoped querysets (`SEC-AUTHZ-*`) |
-| Schema validation of untrusted input | DRF serializers (user), Pydantic (Providers) (`SEC-INPUT-01`) |
-| Output encoding | React default escaping, DRF JSON renderer, structured logs (`SEC-INPUT-02`) |
-| Secrets | Secrets Manager only; nothing in repo or `.env` files (`SEC-INTEG-01`) |
-| Transport | TLS 1.2+ at CloudFront and ALBs; TLS to RDS and Redis (`SEC-DATA-02`) |
-| Headers | CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy` via CloudFront response headers policy |
-| Supply chain | Lockfiles (`uv`/`pip-tools`, `pnpm`), SBOM per build (CycloneDX), Dependabot (`SEC-INTEG-05`) |
-
-### 7.2 Logging and observability
+### 7.1 Logging and observability
 
 - JSON structured logs with a request ID propagated SPA → Django → worker → FastAPI.
-- A log filter strips personal data, budgets, and credentials before emit (`SEC-DATA-04`).
-- Security events (login, authz denials, budget override) go to a separate log group with longer retention.
+- Log content rules and the security log group: [SECURITY.md](SECURITY.md) §4.11.
 - Dashboards: search latency p95 per Provider, circuit-breaker state, job partial-failure rate.
 
-### 7.3 CI/CD
+### 7.2 CI/CD
 
 ```mermaid
 flowchart LR
     pr[Pull request] --> lint[Lint + typecheck]
-    lint --> test[Unit + contract tests<br/>coverage >= 80%]
+    lint --> test[Unit + contract tests<br/>coverage gate]
     test --> sast[SAST + dependency scan<br/>block high/critical]
     sast --> review[Human review]
     review --> merge[Merge to main]
@@ -564,7 +527,7 @@ flowchart LR
 
 Gates map to `NFR-TEST-01`, `NFR-TEST-02`, `NFR-SEC-01`, and `NFR-REVIEW-01`.
 
-### 7.4 Local development
+### 7.3 Local development
 
 `docker compose up` runs Postgres, Redis, Django, a Celery worker, FastAPI, and the Vite dev server, with a mock IdP and mock Providers so no external credentials are needed.
 
@@ -577,7 +540,7 @@ offsiteiq/
   search/         FastAPI service
   infra/          Terraform for the AWS Dev account
   docker-compose.yml
-  ARCHITECTURE.md  DESIGN.md  REQUIREMENTS.md  README.md
+  *.md, style-guide.html, logo.svg   specifications and brand assets
 ```
 
 ## 9. Open architectural questions
