@@ -135,7 +135,7 @@ web/
 
 | Concern | Choice |
 |---|---|
-| Framework | Django 5.x LTS, Django REST Framework |
+| Framework | Django 6.1, Django REST Framework |
 | Auth | OIDC authorization code + PKCE against the company IdP via `mozilla-django-oidc` or `authlib` (`SEC-AUTH-01`, `SEC-AUTH-02`). Server-side sessions in Redis. |
 | Authorization | DRF permission classes plus queryset scoping by Trip membership and role on every view (`SEC-AUTHZ-04`) |
 | Schema / client | `drf-spectacular` emits OpenAPI 3.1; the React client is generated from it |
