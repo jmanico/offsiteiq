@@ -17,6 +17,9 @@
     --oiq-lilac: #ECE6FA;
     --oiq-sun: #F8C75A;
     --oiq-coral: #E96A67;
+    --oiq-coral-tint: #FBE1E0;
+    --oiq-sun-tint: #FDF1D3;
+    --oiq-sun-dark: #B7861A;
 
     --oiq-neutral-0: #FFFFFF;
     --oiq-neutral-25: #FBFCFE;
@@ -33,6 +36,7 @@
     --oiq-radius-lg: 16px;
     --oiq-radius-xl: 20px;
     --oiq-radius-2xl: 28px;
+    --oiq-radius-pill: 999px;
 
     --oiq-shadow-card: 0 1px 2px rgba(23, 32, 51, 0.04), 0 8px 24px rgba(23, 32, 51, 0.06);
     --oiq-shadow-float: 0 12px 36px rgba(23, 32, 51, 0.12);
@@ -113,16 +117,16 @@
   .money .input:first-child { border-radius: var(--oiq-radius-md) 0 0 var(--oiq-radius-md); width: 140px; text-align: right; }
   .money .input:last-child { border-radius: 0 var(--oiq-radius-md) var(--oiq-radius-md) 0; border-left: 0; width: 88px; }
 
-  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--oiq-neutral-900); }
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--oiq-radius-pill); font-size: 13px; font-weight: 600; color: var(--oiq-neutral-900); }
   .status svg { width: 14px; height: 14px; flex: none; }
   .s-ok { background: var(--oiq-mint); }
-  .s-over { background: #FBE1E0; }
-  .s-warn { background: #FDF1D3; }
+  .s-over { background: var(--oiq-coral-tint); }
+  .s-warn { background: var(--oiq-sun-tint); }
   .s-info { background: var(--oiq-sky); }
   .s-neutral { background: var(--oiq-neutral-100); }
 
-  .budget .track { height: 12px; background: var(--oiq-neutral-100); border-radius: 999px; overflow: hidden; margin: 8px 0; }
-  .budget .fill { height: 100%; border-radius: 999px; }
+  .budget .track { height: 12px; background: var(--oiq-neutral-100); border-radius: var(--oiq-radius-pill); overflow: hidden; margin: 8px 0; }
+  .budget .fill { height: 100%; border-radius: var(--oiq-radius-pill); }
   .budget .line { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; }
 
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -171,6 +175,9 @@
     <div class="swatch"><div class="chip-color" style="background:var(--oiq-lilac)"></div><div class="meta"><b>accent.lilac</b><span>#ECE6FA · --oiq-lilac</span></div></div>
     <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun)"></div><div class="meta"><b>accent.sun</b><span>#F8C75A · --oiq-sun</span></div></div>
     <div class="swatch"><div class="chip-color" style="background:var(--oiq-coral)"></div><div class="meta"><b>accent.coral</b><span>#E96A67 · --oiq-coral</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-coral-tint)"></div><div class="meta"><b>accent.coral-tint</b><span>#FBE1E0 · --oiq-coral-tint</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun-tint)"></div><div class="meta"><b>accent.sun-tint</b><span>#FDF1D3 · --oiq-sun-tint</span></div></div>
+    <div class="swatch"><div class="chip-color" style="background:var(--oiq-sun-dark)"></div><div class="meta"><b>accent.sun-dark</b><span>#B7861A · --oiq-sun-dark</span></div></div>
   </div>
 
   <h3>Neutrals</h3>
@@ -230,6 +237,7 @@
     <div><div class="radius-box" style="border-radius:var(--oiq-radius-lg)"></div><p class="ref">radius.lg · 16px</p></div>
     <div><div class="radius-box" style="border-radius:var(--oiq-radius-xl)"></div><p class="ref">radius.xl · 20px</p></div>
     <div><div class="radius-box" style="border-radius:var(--oiq-radius-2xl)"></div><p class="ref">radius.2xl · 28px</p></div>
+    <div><div class="radius-box" style="border-radius:var(--oiq-radius-pill)"></div><p class="ref">radius.pill · 999px</p></div>
   </div>
   <div class="grid" style="margin-top:24px">
     <div class="card"><b>Card</b><p class="ref">--oiq-shadow-card</p></div>
@@ -279,12 +287,12 @@
   <h2 id="chips">Status chips</h2>
   <p class="ref">DESIGN.md §30. Text plus color, plus an icon for critical status. Never color alone.</p>
   <div class="card row">
-    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="#19A88C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
-    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="#E96A67" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over per-person budget</span>
-    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="#E96A67" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over trip budget</span>
+    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over per-person budget</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over trip budget</span>
     <span class="status s-info">Nonstop</span>
-    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="#E96A67" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3zM12 10v4M12 17h.01"/></svg>Conflict</span>
-    <span class="status s-warn"><svg viewBox="0 0 24 24" fill="none" stroke="#B7861A" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Stale rate</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3zM12 10v4M12 17h.01"/></svg>Conflict</span>
+    <span class="status s-warn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-sun-dark)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Stale rate</span>
     <span class="status s-neutral">Draft</span>
     <span class="status s-info">Finalized</span>
   </div>
@@ -296,11 +304,11 @@
   <div class="card budget">
     <div class="line"><b>Trip budget</b><span class="num">$43,220.00 / $65,000.00</span></div>
     <div class="track"><div class="fill" style="width:66%;background:var(--oiq-teal)"></div></div>
-    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="#19A88C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
+    <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within budget</span>
 
     <div class="line" style="margin-top:24px"><b>Per-person budget · Priya N.</b><span class="num">$712.00 / $600.00</span></div>
     <div class="track"><div class="fill" style="width:100%;background:var(--oiq-coral)"></div></div>
-    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="#E96A67" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over by $112.00</span>
+    <span class="status s-over"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-coral)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Over by $112.00</span>
   </div>
 </section>
 
@@ -314,7 +322,7 @@
     </div>
     <div class="row" style="justify-content:space-between;margin-top:4px">
       <span>United 1572 · nonstop</span>
-      <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="#19A88C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within per-person budget</span>
+      <span class="status s-ok"><svg viewBox="0 0 24 24" fill="none" stroke="var(--oiq-teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Within per-person budget</span>
     </div>
     <div class="num">09:10 → 14:42 (3h 32m)</div>
     <div class="src">Source: Provider A · ref UA1572-XYZ · as of 14:02</div>

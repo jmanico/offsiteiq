@@ -1,22 +1,11 @@
 # DESIGN.md: offsiteiq Design System
 
 Version: 0.1 (draft, 2026-10-01)
-Status: DRAFT. Derived from [REQUIREMENTS.md](REQUIREMENTS.md). Where this document and REQUIREMENTS.md disagree, REQUIREMENTS.md wins. Requirement IDs (for example `FR-SRCH-08`) are cited where a design decision exists to satisfy one.
-
-> Product: company trip and offsite planning for distributed teams.
-> Direction: calm, friendly enterprise SaaS. Strong hierarchy, generous whitespace, simple geometric illustration, and a small set of functional accent colors.
+Status: DRAFT. Derived from [REQUIREMENTS.md](REQUIREMENTS.md). Where this document and REQUIREMENTS.md disagree, REQUIREMENTS.md wins; on security, [SECURITY.md](SECURITY.md) wins. Requirement IDs (for example `FR-SRCH-08`) are cited where a design decision exists to satisfy one.
 
 ## 1. Design intent
 
-offsiteiq should feel like a calm operations console for a problem that is usually chaotic. v1 coordinates:
-
-- the trip destination, dates, trip budget, and per-person budget
-- each participant's home location as a travel origin
-- flight and hotel options from several providers
-- meeting spaces, restaurants, and activities at the destination
-- one shared itinerary and a view for each participant
-
-Booking, payment, ground transportation, visas, insurance, and expenses are out of scope for v1 (REQUIREMENTS §2.2). The UI must not imply that offsiteiq books anything. Use "options", "rates", and "selected", never "booked" or "confirmed".
+v1 scope is defined in REQUIREMENTS.md §2. The UI must not imply that offsiteiq books anything. Use "options", "rates", and "selected", never "booked" or "confirmed".
 
 ### Personality
 
@@ -38,8 +27,6 @@ Take broad cues from polished modern SaaS marketing sites: large confident type,
 Do not copy any other company's logo geometry, illustrations, page compositions, source code, or brand assets. offsiteiq must be recognizable on its own.
 
 ## 3. Brand concept
-
-offsiteiq brings distributed people into one coordinated plan.
 
 Core metaphor: **origins → routes → one destination**.
 
@@ -64,7 +51,7 @@ Three colored origin nodes (blue, orchid, teal) with short curved routes converg
 
 ### Wordmark
 
-`offsite` in navy `#172A46`, `iq` in teal `#19A88C`. Always lowercase. Inter, semibold (600–650), letter spacing about -0.02em. No italics or script.
+`offsite` in `brand.navy`, `iq` in `brand.teal`. Always lowercase. Inter, semibold (600–650), letter spacing about -0.02em. No italics or script.
 
 ### Variants to produce
 
@@ -108,6 +95,9 @@ The interface is mostly neutral. Color helps people parse information; it does n
 | `accent.lilac` | `#ECE6FA` | orchid-tinted surfaces |
 | `accent.sun` | `#F8C75A` | warnings, stale data |
 | `accent.coral` | `#E96A67` | over budget, conflicts, destructive actions |
+| `accent.coral-tint` | `#FBE1E0` | coral-tinted surfaces (over-budget and conflict chips) |
+| `accent.sun-tint` | `#FDF1D3` | sun-tinted surfaces (warning and stale chips) |
+| `accent.sun-dark` | `#B7861A` | sun icons and graphics that need 3:1 contrast on light surfaces |
 
 ### Neutrals
 
@@ -171,19 +161,12 @@ Whitespace is a core characteristic. Do not solve hierarchy by adding borders ev
 | `radius.lg` | 16px | cards |
 | `radius.xl` | 20px | large cards |
 | `radius.2xl` | 28px | marketing panels |
-| `radius.pill` | 999px | pills, avatars |
+| `radius.pill` | 999px | pills, avatars, chips |
 
 ### Borders and shadows
 
-```css
-border: 1px solid #E9EDF3;
-
-/* card */
-box-shadow: 0 1px 2px rgba(23, 32, 51, 0.04), 0 8px 24px rgba(23, 32, 51, 0.06);
-
-/* floating panel */
-box-shadow: 0 12px 36px rgba(23, 32, 51, 0.12);
-```
+- Border: 1px `neutral.100`.
+- Card shadow: `--oiq-shadow-card`. Floating panel shadow: `--oiq-shadow-float` (values in §39).
 
 No dark card outlines. Use shadows sparingly.
 
@@ -214,12 +197,7 @@ Destination and venue photography is fine in selected places. Generic travel sto
 
 ## 11. Roles shape every screen
 
-There are two roles (SEC-AUTHZ-01):
-
-- **Organizer:** sees budgets, aggregate cost, and every participant's travel.
-- **Participant:** sees only their own travel and shared events (SEC-AUTHZ-02, -03).
-
-Participant views must not render budget figures, trip totals, or other participants' details, even hidden in the DOM. Hiding is a server decision; the UI simply never receives that data.
+What each role may see is set by SEC-AUTHZ-01 to -03 in SECURITY.md. Participant screens are designed only from the data the API returns for that role; never design a Participant view that hides Organizer data client-side.
 
 ## 12. Application shell
 
@@ -296,8 +274,7 @@ Remaining                       $21,780.00   ✓ Within budget
 Rates as of 14:02 local · FX rates dated Oct 1
 ```
 
-- Trip total covers selected flights plus lodging, matching FR-SRCH-06. Venue costs are indicative and shown separately, labeled "indicative".
-- Budget status always uses text and an icon as well as color.
+- Venue costs are not in the trip total (FR-SRCH-06); show them separately, labeled "indicative".
 - Converted amounts show the original currency on hover/focus and the dated FX rate used (FR-SRCH-04).
 
 ## 15. Participants and origins
@@ -319,7 +296,7 @@ United 1572 · nonstop                   ✓ Within per-person budget
 Source: Provider A · ref UA1572-XYZ · as of 14:02
 ```
 
-Every option shows price, currency, provider, and provider reference (FR-SRCH-03), and a freshness timestamp (FR-SRCH-08). Options that would push a participant over their per-person budget carry an "Over per-person budget by $X" chip (FR-SRCH-05). They are flagged, not hidden.
+Every option shows price, currency, provider, and provider reference (FR-SRCH-03), plus freshness (§31). Options that would push a participant over their per-person budget carry an "Over per-person budget by $X" chip (FR-SRCH-05). They are flagged, not hidden.
 
 ## 17. Hotel options
 
@@ -331,7 +308,7 @@ Meeting spaces: capacity, address, indicative cost, distance from hotel, accessi
 
 Restaurants and activities: duration, capacity, distance, price per person, indoor/outdoor, accessibility. Photography is allowed here.
 
-All provider-supplied names, descriptions, and addresses render as plain text, never HTML (SEC-INPUT-04). Do not design features that depend on rich provider markup.
+Do not design features that depend on rich provider markup; provider content is text only (SEC-INPUT-04).
 
 ## 19. Master itinerary
 
@@ -377,7 +354,7 @@ Trip budget
 ████████████████░░░░  $43,220 / $65,000   ✓ Within budget
 ```
 
-Over-budget states use coral fill plus the words "Over by $X". All amounts are fixed-point; the UI never shows floating-point artifacts and always shows two decimals in detailed views (FR-TRIP-06).
+Over-budget states use coral fill plus the words "Over by $X". The UI never shows floating-point artifacts, always shows two decimals in detailed views (FR-TRIP-06), and shows the same total for a trip in every view.
 
 Category budgets (airfare, meals, and so on) are not in v1 requirements. Do not design for them yet.
 
@@ -436,7 +413,7 @@ Proof bar under the hero: "Plan the whole offsite in one place: People · Flight
 
 Alternate text with real product screenshots: plan the trip, coordinate distributed participants, compare real options, control the budget, build the itinerary, keep every participant informed.
 
-A Security section is worth having: SSO via your identity provider, role-based access, minimal personal data. Make only claims REQUIREMENTS.md §5 guarantees.
+A Security section is worth having: SSO via your identity provider, role-based access, minimal personal data. Make only claims SECURITY.md §3 guarantees.
 
 ---
 
@@ -455,10 +432,7 @@ A Security section is worth having: SSO via your identity provider, role-based a
 
 Height 44–48px. States: default, hover, focus, populated, disabled, error, read-only. Labels stay visible; placeholders are never labels.
 
-```css
-outline: 3px solid rgba(57, 120, 246, 0.22);
-border-color: #3978F6;
-```
+Focus: `--oiq-focus` ring and a `brand.blue` border.
 
 Money inputs are a paired amount + currency control.
 
@@ -508,7 +482,7 @@ Preserve the user's work and say: what failed, what is still valid, whether retr
 
 > Hotel availability could not be refreshed. Your selections are unchanged. Retry, or continue with the rates retrieved at 14:02.
 
-Never show raw provider error text, stack traces, or internal identifiers in the UI.
+Error content limits: SECURITY.md §5.7. Do not show internal identifiers.
 
 ---
 
@@ -526,7 +500,7 @@ Never show raw provider error text, stack traces, or internal identifiers in the
 
 ## 36. Standard
 
-Target **WCAG 2.2 AA**: 4.5:1 text contrast, 3:1 for large text and key graphics, full keyboard access, visible focus, semantic headings, correct labels, accessible dialogs, skip link, reduced motion support, minimum target size, and no color-only status. Travel logistics have real consequences; accessibility is functional correctness.
+Target **WCAG 2.2 AA**: 4.5:1 text contrast, 3:1 for large text and key graphics, full keyboard access, visible focus, semantic headings, correct labels, accessible dialogs, skip link, reduced motion support, minimum target size, and no color-only status.
 
 # Motion
 
@@ -546,8 +520,6 @@ Concise, calm, specific, operational, transparent.
 | Hotel rates were retrieved 18 minutes ago. | We found amazing hotel deals! |
 | Selected | Booked |
 
-offsiteiq is an enterprise planning tool, not a leisure travel marketplace.
-
 # Tokens
 
 ## 39. CSS variables
@@ -564,6 +536,9 @@ offsiteiq is an enterprise planning tool, not a leisure travel marketplace.
   --oiq-lilac: #ECE6FA;
   --oiq-sun: #F8C75A;
   --oiq-coral: #E96A67;
+  --oiq-coral-tint: #FBE1E0;
+  --oiq-sun-tint: #FDF1D3;
+  --oiq-sun-dark: #B7861A;
 
   --oiq-neutral-0: #FFFFFF;
   --oiq-neutral-25: #FBFCFE;
@@ -580,6 +555,7 @@ offsiteiq is an enterprise planning tool, not a leisure travel marketplace.
   --oiq-radius-lg: 16px;
   --oiq-radius-xl: 20px;
   --oiq-radius-2xl: 28px;
+  --oiq-radius-pill: 999px;
 
   --oiq-shadow-card: 0 1px 2px rgba(23, 32, 51, 0.04), 0 8px 24px rgba(23, 32, 51, 0.06);
   --oiq-shadow-float: 0 12px 36px rgba(23, 32, 51, 0.12);
@@ -593,17 +569,9 @@ offsiteiq is an enterprise planning tool, not a leisure travel marketplace.
 
 1. Build reusable primitives before page-specific variants.
 2. Use tokens, never hard-coded colors.
-3. Use the 8px spacing system.
-4. Semantic HTML first; real tables for tabular data.
-5. Keep forms keyboard accessible and preserve form state across steps.
-6. Never communicate budget, policy, or conflict status by color alone.
-7. Show source and freshness for every provider rate.
-8. Keep money totals identical across every view; compute them server-side with fixed-point decimals.
-9. Render provider content as text only; never inject provider HTML.
-10. Participant views never receive budget or other-participant data.
-11. Prefer progressive disclosure over giant forms.
-12. Treat the mobile participant itinerary as first-class.
-13. Do not use third-party brand assets without permission.
+3. Semantic HTML first.
+4. Keep forms keyboard accessible and preserve form state across steps.
+5. Prefer progressive disclosure over giant forms.
 
 # First screens
 
@@ -620,16 +588,3 @@ offsiteiq is an enterprise planning tool, not a leisure travel marketplace.
 9. Review and budget override
 10. Participant itinerary (mobile)
 11. Marketing homepage
-
-# Acceptance criteria
-
-The design succeeds when:
-
-- a new visitor understands the product within 10 seconds of the homepage
-- an organizer can see trip cost and budget status without leaving the current step
-- every price shows its source, currency, and freshness
-- per-person and trip budget overruns are visible and explained in words
-- itinerary conflicts are visible where they occur
-- the master itinerary reads at a glance
-- participants can use their itinerary comfortably on mobile and never see budget data
-- offsiteiq has its own recognizable identity
