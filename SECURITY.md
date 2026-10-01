@@ -27,7 +27,7 @@ Trust boundaries: browser → CloudFront/ALB → Django; Django/Celery → FastA
 | Python | 3.12, 3.13, or 3.14; production micro release pinned and tested |
 | Django | 6.1 line, latest patch. Plan the next migration before 6.1 extended support ends in December 2027. |
 | Django REST Framework | Latest release compatible with Django 6.1 |
-| PostgreSQL | 15 or later (RDS) |
+| PostgreSQL | 16 (RDS) |
 | React / react-dom | 19.x, exactly matching versions |
 | TypeScript | `strict: true` |
 
