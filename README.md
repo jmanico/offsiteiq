@@ -26,4 +26,4 @@ Calm, friendly enterprise SaaS: light neutral surfaces, navy text, a small set o
 
 ## Security
 
-Security requirements follow OWASP ASVS 5.0. See section 5 of [REQUIREMENTS.md](REQUIREMENTS.md).
+Security requirements follow OWASP ASVS 5.0. See section 5 of [REQUIREMENTS.md](REQUIREMENTS.md). The secure coding standard for the React and Django tiers, and how to report a vulnerability, are in [SECURITY.md](SECURITY.md).
