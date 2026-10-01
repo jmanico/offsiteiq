@@ -6,7 +6,7 @@ A company trip planner for distributed teams. Given a destination, a date range,
 
 ## Status
 
-Early planning. No code yet. The draft requirements are in [REQUIREMENTS.md](REQUIREMENTS.md). Items marked `OPEN` there need stakeholder confirmation before they are implemented.
+Early planning. No code yet. The draft requirements are in [REQUIREMENTS.md](REQUIREMENTS.md), and the ticket backlog with readiness scores is in [BACKLOG.md](BACKLOG.md). Agent instructions are in [AGENTS.md](AGENTS.md). Items marked `OPEN` in the requirements need stakeholder confirmation before they are implemented.
 
 The design system (brand, color, typography, components, and key screens) is in [DESIGN.md](DESIGN.md). The logo is [logo.svg](logo.svg).
 
@@ -14,7 +14,7 @@ The system architecture (React, Django, FastAPI, PostgreSQL, AWS) is in [ARCHITE
 
 ## Planned features
 
-- **Trip setup:** destination, dates, trip budget and per-person budget, with multi-currency support
+- **Trip setup:** destination, dates, trip budget and per-person budget, in USD for v1
 - **Participants:** an employee roster with home locations, used as the origin for each person's travel search
 - **Travel and lodging search:** availability and rates from several flight and hotel providers, with checks against both budgets
 - **Local venues:** meeting spaces and entertainment options at the destination
