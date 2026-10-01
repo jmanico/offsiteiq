@@ -10,6 +10,8 @@ Early planning. No code yet. The draft requirements are in [REQUIREMENTS.md](REQ
 
 The design system (brand, color, typography, components, and key screens) is in [DESIGN.md](DESIGN.md). The logo is [logo.svg](logo.svg).
 
+The system architecture (React, Django, FastAPI, PostgreSQL, AWS) is in [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Planned features
 
 - **Trip setup:** destination, dates, trip budget and per-person budget, with multi-currency support
