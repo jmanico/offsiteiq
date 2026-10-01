@@ -11,4 +11,4 @@ A company trip planner for distributed teams. Early planning; no code yet.
 | [DESIGN.md](DESIGN.md) | Design system; rendered in [style-guide.html](style-guide.html). Logo: [logo.svg](logo.svg). |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Components, data model, infrastructure. |
 | [SECURITY.md](SECURITY.md) | Security requirements, secure coding standard, and how to report a vulnerability. |
-| [CLAUDE.md](CLAUDE.md) | Rules for coding agents. |
+| [AGENTS.md](AGENTS.md) | Rules for coding agents. [CLAUDE.md](CLAUDE.md) points to it. |
