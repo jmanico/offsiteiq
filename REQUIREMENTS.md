@@ -24,6 +24,7 @@ The following are also out of scope for v1, pending confirmation (`OPEN`):
 - Ground transportation, visas, travel insurance
 - Expense reimbursement and accounting integration
 - Hotel search. The v1 hotel is already booked (section 2.3). FR-SRCH-02 is deferred.
+- Design-only surfaces with no requirement yet: the Organizer dashboard (DESIGN.md §13), the Reports area, the marketing site (DESIGN.md §23 to §25), and the participant origin map (BACKLOG.md OIQ-029). They need requirements before implementation (decided 2026-10-01).
 - International travel and currency conversion. All v1 travel is within the continental US and priced in USD (section 2.3). FR-SRCH-04 is deferred.
 
 ### 2.3 v1 trip profile (decided 2026-10-01)
@@ -166,7 +167,7 @@ Status on 2026-10-01 after the stakeholder call:
 20. How are meeting sessions and entertainment events created and scheduled? FR-ITIN-01 includes them, but no requirement covers adding them. (Blocks OIQ-020.)
 21. Can the Trip Budget and Per-Person Budget use different currencies? If so, the FR-TRIP-05 check needs an exchange rate at creation time. (Blocks OIQ-005.)
 22. In which time zone is "today" evaluated for FR-TRIP-02: the Organizer's or the destination's? (Blocks OIQ-005.)
-23. What triggers each Trip status transition (draft, searching, planned, archived), and who may make it? (Blocks OIQ-005.)
+23. What triggers each Trip status transition, and who may make it? The status values are draft, ready_for_review, finalized, and archived (ARCHITECTURE.md §5.3, DESIGN.md §22; decided 2026-10-01). (Blocks OIQ-005.)
 24. Is the Organizer always a Participant, and can a Trip have more than one Organizer? (Blocks SEC-AUTHZ-01 / OIQ-008.)
 25. What counts as a red-eye? A proposed definition is any flight that departs after 21:00 local time and arrives before 06:00 local time. (Blocks FR-SRCH-10.)
 26. When do the Thursday morning activities end, and how long is the buffer before the earliest allowed BNA departure? (Blocks FR-SRCH-11.)

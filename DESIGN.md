@@ -214,9 +214,11 @@ What each role may see is set by SEC-AUTHZ-01 to -03 in SECURITY.md. Participant
 └───────────────┴──────────────────────────────────────────────┘
 ```
 
-Left nav is 240px expanded. The current section uses `accent.sky` background with navy text. Participants see a reduced nav: My trips, My itinerary, Settings.
+Left nav is 240px expanded. Reports is not in v1 scope until a requirement exists (REQUIREMENTS §2.2). The current section uses `accent.sky` background with navy text. Participants see a reduced nav: My trips, My itinerary, Settings.
 
 ## 13. Organizer dashboard
+
+Not in v1 scope until a requirement exists (REQUIREMENTS §2.2).
 
 Answers four questions:
 
@@ -287,7 +289,7 @@ Never show or ask for a street address. Import (CSV/HRIS) is shown as a disabled
 
 ## 16. Flight options
 
-Business travel, not bargain hunting. Sort by policy fit, arrival relative to trip start, nonstop availability, then price.
+Business travel, not bargain hunting. There is no default ranking: each option shows its agenda fit, stops, and price, and people choose (REQUIREMENTS FR-SRCH-10, FR-SRCH-12; Q29 withdrawn). Users can sort by a column and filter to nonstop. A cheaper red-eye never outranks a comparable daytime option.
 
 ```text
 SFO → AUS                               $418.00 round trip
@@ -382,6 +384,8 @@ Trip states for v1: **Draft**, **Ready for review**, **Finalized**, **Archived**
 # Marketing site
 
 ## 23. Homepage
+
+The marketing site (§23 to §25) is not in v1 scope until a requirement exists (REQUIREMENTS §2.2).
 
 Navigation: logo, Product, How it works, Security, Pricing, Sign in, `[Plan a company trip]`.
 
