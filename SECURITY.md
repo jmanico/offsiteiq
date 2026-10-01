@@ -37,13 +37,13 @@ Aligned to OWASP ASVS 5.0.
 | SEC-AUTH-01 | Authentication SHALL be delegated to the company identity provider via OIDC. No local password store. | V6 |
 | SEC-AUTH-02 | Authorization code flow with PKCE SHALL be used. Implicit flow is prohibited. Follow RFC 9700. | V10 |
 | SEC-AUTH-03 | Session tokens SHALL be stored in HttpOnly, Secure, SameSite=Lax (or Strict) cookies. | V7 |
-| SEC-AUTH-04 | Sessions SHALL expire after an idle timeout and an absolute timeout. Values `OPEN`. | V7 |
+| SEC-AUTH-04 | Sessions SHALL expire after an idle timeout and an absolute timeout. Idle timeout 60 minutes; absolute timeout 8 hours. | V7 |
 
 ### 3.2 Authorization
 
 | ID | Requirement | ASVS ref |
 |----|-------------|----------|
-| SEC-AUTHZ-01 | The system SHALL enforce role-based access with at least two roles: Organizer and Participant. | V8 |
+| SEC-AUTHZ-01 | The system SHALL enforce role-based access with at least two roles: Organizer and Participant, scoped per Trip. Trip creation is limited to the Entra planner group (FR-TRIP-08). | V8 |
 | SEC-AUTHZ-02 | Only an Organizer of a Trip SHALL view budgets, aggregate costs, and other Participants' travel details. | V8 |
 | SEC-AUTHZ-03 | A Participant SHALL view only their own travel details and shared events. | V8 |
 | SEC-AUTHZ-04 | Every data access SHALL be authorized server-side by Trip membership and role. Client-side checks are not sufficient. | V8 |
@@ -64,9 +64,9 @@ Aligned to OWASP ASVS 5.0.
 |----|-------------|----------|
 | SEC-DATA-01 | Employee home locations and travel details are personal data. Collection SHALL be limited to what the trip search requires (see `FR-PART-05` in [REQUIREMENTS.md](REQUIREMENTS.md)). | V14 |
 | SEC-DATA-02 | Personal data SHALL be encrypted in transit (TLS 1.2 minimum, TLS 1.3 preferred) and at rest. | V9, V11 |
-| SEC-DATA-03 | Trip data SHALL have a defined retention period after Trip end date, after which it is deleted. Period `OPEN`. | V14 |
+| SEC-DATA-03 | Trip data SHALL have a defined retention period after Trip end date, after which it is deleted. Period: 90 days after the Trip end date. | V14 |
 | SEC-DATA-04 | Logs SHALL NOT contain personal data (including home locations and travel details), budgets, Provider or other credentials, session cookies, CSRF tokens, OIDC tokens, or nonces. | V16 |
-| SEC-DATA-05 | `OPEN`: confirm whether any Participants are in jurisdictions with specific data residency requirements. | V14 |
+| SEC-DATA-05 | Answered: all Participants are in the US, so no residency constraint applies (REQUIREMENTS Q10). | V14 |
 
 ### 3.5 Third-party integrations and secrets
 
@@ -124,8 +124,8 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
-SESSION_COOKIE_AGE = ...          # absolute timeout, OPEN
-# idle timeout enforced by middleware that tracks last activity, OPEN
+SESSION_COOKIE_AGE = 8 * 60 * 60  # absolute timeout: 8 hours
+# idle timeout (60 minutes) enforced by middleware that tracks last activity
 CSRF_COOKIE_SECURE = True
 SIGNED_COOKIE_LEGACY_SALT_FALLBACK = False
 ```
@@ -206,8 +206,8 @@ Trip.objects.get(pk=kwargs["pk"])
 - Validate any request-controlled redirect (for example, `next` after login) with `url_has_allowed_host_and_scheme()` and an explicit host list, requiring HTTPS.
 - Do not enable `RedirectView.preserve_request` without review.
 - Django does not fetch user-supplied URLs. If that ever changes, allowlist schemes and hosts, resolve and block private and metadata addresses, and re-check after every redirect. `URLValidator` is not an SSRF defense.
-- Itinerary exports (`FR-ITIN-05`, format `OPEN`) are built with a library that escapes for the target format (ICS text escaping, PDF generation without HTML from untrusted data). Exports pass the same authorization as the view they represent.
-- Roster CSV import (`FR-PART-04`, `OPEN`): enforce size and row limits, validate each row through a serializer, and neutralize spreadsheet formula prefixes (`=`, `+`, `-`, `@`) in any CSV the system later exports.
+- Itinerary exports (`FR-ITIN-05`, format ICS) are built with a library that escapes for the target format (ICS text escaping, PDF generation without HTML from untrusted data). Exports pass the same authorization as the view they represent.
+- Roster CSV import (`FR-PART-04`, operator CSV of home airports): enforce size and row limits, validate each row through a serializer, and neutralize spreadsheet formula prefixes (`=`, `+`, `-`, `@`) in any CSV the system later exports.
 - If uploads are added, generate storage names server-side, stream with `chunks()`, validate actual content, and serve from a separate domain.
 
 ### 4.10 Secrets, signing, caching, and tasks
